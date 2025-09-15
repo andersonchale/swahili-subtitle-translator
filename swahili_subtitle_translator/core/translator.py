@@ -119,13 +119,29 @@ class SubtitleTranslator:
         
         # Initialize translation services
         self.services = {
-            'google': GoogleTranslationService(source_lang, target_lang),
-            'mymemory': MyMemoryTranslationService(source_lang, target_lang)
+            'google': GoogleTranslationService(source_lang, target_lang)
         }
+        
+        # Try to initialize MyMemory with proper language codes
+        try:
+            # MyMemory uses different language codes
+            mymemory_source = 'english' if source_lang == 'en' else source_lang
+            mymemory_target = 'swahili' if target_lang == 'sw' else target_lang
+            self.services['mymemory'] = MyMemoryTranslationService(mymemory_source, mymemory_target)
+            logger.info("MyMemory translation service initialized successfully")
+        except Exception as e:
+            logger.warning(f"MyMemory service initialization failed: {e}")
+            logger.info("Continuing with Google Translate only")
         
         # Set primary and fallback services
         if primary_service not in self.services:
-            raise ValueError(f"Unsupported service: {primary_service}")
+            # If requested service is not available, fall back to available services
+            available_services = list(self.services.keys())
+            if available_services:
+                primary_service = available_services[0]
+                logger.warning(f"Requested service not available, using {primary_service}")
+            else:
+                raise ValueError("No translation services available")
         
         self.primary_service = primary_service
         self.fallback_services = [s for s in self.services.keys() if s != primary_service]
@@ -218,6 +234,66 @@ class SubtitleTranslator:
         # Preprocess text
         processed_text = self._preprocess_text(text)
         
+        # Handle long text by splitting into sentences (improved from original)
+        if len(processed_text) > 500:
+            return self._translate_long_text(processed_text, text, progress_callback)
+        
+        # Translate normal length text
+        return self._translate_single_text(processed_text, text, progress_callback)
+    
+    def _translate_long_text(self, processed_text: str, original_text: str, progress_callback=None) -> str:
+        """
+        Translate long text by splitting into sentences.
+        
+        Improved version of the original script's sentence splitting logic.
+        """
+        logger.debug(f"Translating long text ({len(processed_text)} chars): {processed_text[:50]}...")
+        
+        # Split by sentences - improved detection
+        sentence_delimiters = ['. ', '! ', '? ', '.\n', '!\n', '?\n']
+        sentences = [processed_text]
+        
+        for delimiter in sentence_delimiters:
+            new_sentences = []
+            for sentence in sentences:
+                new_sentences.extend(sentence.split(delimiter))
+            sentences = [s.strip() for s in new_sentences if s.strip()]
+        
+        if len(sentences) <= 1:
+            # Fallback: split by punctuation if no sentences found
+            sentences = [s.strip() for s in processed_text.split(',') if s.strip()]
+        
+        if len(sentences) <= 1:
+            # Last resort: translate as single text
+            return self._translate_single_text(processed_text, original_text, progress_callback)
+        
+        # Translate each sentence
+        translated_sentences = []
+        for i, sentence in enumerate(sentences):
+            if sentence.strip():
+                logger.debug(f"Translating sentence {i+1}/{len(sentences)}: {sentence[:30]}...")
+                translated = self._translate_single_text(sentence.strip(), sentence, progress_callback)
+                translated_sentences.append(translated)
+                # Small delay between sentence translations
+                time.sleep(0.1)
+        
+        # Reconstruct the text with proper punctuation
+        result = '. '.join(translated_sentences)
+        
+        # Apply post-processing
+        final_result = self._postprocess_text(result, original_text)
+        
+        # Cache the result
+        if self.cache:
+            cache_key = self._get_cache_key(original_text)
+            self.cache.set(cache_key, final_result, original_text, self.source_lang, self.target_lang)
+        
+        return final_result
+    
+    def _translate_single_text(self, processed_text: str, original_text: str, progress_callback=None) -> str:
+        """
+        Translate a single piece of text using available services.
+        """
         # Try translation with services
         services_to_try = [self.primary_service] + self.fallback_services
         last_error = None
@@ -227,23 +303,23 @@ class SubtitleTranslator:
             
             for attempt in range(self.max_retries):
                 try:
-                    logger.debug(f"Translating with {service_name} (attempt {attempt + 1}): {text[:50]}...")
+                    logger.debug(f"Translating with {service_name} (attempt {attempt + 1}): {original_text[:50]}...")
                     
                     translated = service.translate(processed_text)
                     
                     if translated and translated.strip():
                         # Post-process translation
-                        final_translation = self._postprocess_text(translated, text)
+                        final_translation = self._postprocess_text(translated, original_text)
                         
                         # Cache the result
                         if self.cache:
-                            cache_key = self._get_cache_key(text)
-                            self.cache.set(cache_key, final_translation)
+                            cache_key = self._get_cache_key(original_text)
+                            self.cache.set(cache_key, final_translation, original_text, self.source_lang, self.target_lang)
                         
                         # Update stats
                         self.stats['service_usage'][service_name] += 1
                         
-                        logger.debug(f"Successfully translated: {text[:30]}... -> {final_translation[:30]}...")
+                        logger.debug(f"Successfully translated: {original_text[:30]}... -> {final_translation[:30]}...")
                         
                         if progress_callback:
                             progress_callback(1)
@@ -265,12 +341,12 @@ class SubtitleTranslator:
         
         # If all services failed, return original text
         self.stats['failed_translations'] += 1
-        logger.error(f"All translation services failed for: {text[:50]}...")
+        logger.error(f"All translation services failed for: {original_text[:50]}...")
         
         if progress_callback:
             progress_callback(1)
         
-        return text  # Return original text as fallback
+        return original_text  # Return original text as fallback
     
     def translate_batch(
         self,

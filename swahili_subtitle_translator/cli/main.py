@@ -145,6 +145,7 @@ def translate_single_file(args) -> int:
         progress_bar = None
         
         def progress_callback(message):
+            nonlocal progress_bar
             if "Translating:" in message:
                 parts = message.split()
                 if len(parts) >= 2:
@@ -152,7 +153,6 @@ def translate_single_file(args) -> int:
                     if len(current_total) == 2:
                         current, total = map(int, current_total)
                         if progress_bar is None:
-                            nonlocal progress_bar
                             progress_bar = ProgressBar(total)
                         progress_bar.update(current, f"Translating subtitles...")
         
