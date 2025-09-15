@@ -20,36 +20,68 @@ A professional, open-source tool for translating subtitle files from English to 
 
 ## 🚀 Quick Start
 
-### Installation
+### Method 1: Direct Usage (Recommended for beginners)
 
+1. **Clone the repository:**
 ```bash
-# Clone the repository
 git clone https://github.com/yourusername/swahili-subtitle-translator.git
 cd swahili-subtitle-translator
-
-# Install the package
-pip install -e .
-
-# Or install from PyPI (when published)
-pip install swahili-subtitle-translator
 ```
 
-### Basic Usage
+2. **Install dependencies:**
+```bash
+pip3 install -r requirements.txt
+```
 
+3. **Use directly with Python:**
 ```bash
 # Translate a single subtitle file
+python3 -m swahili_subtitle_translator.cli.main movie.srt
+
+# Show help
+python3 -m swahili_subtitle_translator.cli.main --help
+
+# Translate with statistics
+python3 -m swahili_subtitle_translator.cli.main movie.srt --stats
+```
+
+### Method 2: Install as Package (Advanced users)
+
+1. **Clone and install in development mode:**
+```bash
+git clone https://github.com/yourusername/swahili-subtitle-translator.git
+cd swahili-subtitle-translator
+pip3 install -e .
+```
+
+2. **Use the installed command:**
+```bash
+# Now you can use the command directly
 swahili-sub-translate movie.srt
+sst movie.srt  # Short alias
+```
 
-# Translate with custom output filename
-swahili-sub-translate movie.srt -o movie_swahili.srt
+### Method 3: Install from PyPI (Future - when published)
 
-# Batch translate all subtitle files in a directory
-swahili-sub-translate /path/to/subtitles --batch
+```bash
+# Install from PyPI (when published)
+pip3 install swahili-subtitle-translator
 
-# Use MyMemory translation service
+# Use directly
+swahili-sub-translate movie.srt
+```
+
+### Basic Usage Examples
+
+```bash
+# Method 1 (Direct Python usage)
+python3 -m swahili_subtitle_translator.cli.main movie.srt
+python3 -m swahili_subtitle_translator.cli.main movie.srt -o movie_swahili.srt
+python3 -m swahili_subtitle_translator.cli.main /path/to/subtitles --batch
+
+# Method 2 (After pip install -e .)
+swahili-sub-translate movie.srt
 swahili-sub-translate movie.srt --service mymemory
-
-# Show translation statistics
 swahili-sub-translate movie.srt --stats
 ```
 
@@ -57,6 +89,19 @@ swahili-sub-translate movie.srt --stats
 
 ### Single File Translation
 
+**Method 1 (Direct Python - No installation needed):**
+```bash
+# Basic translation
+python3 -m swahili_subtitle_translator.cli.main "Game of Thrones S01E01.srt"
+
+# With custom output path
+python3 -m swahili_subtitle_translator.cli.main "movie.srt" -o "output/movie_swahili.srt"
+
+# With specific translation service
+python3 -m swahili_subtitle_translator.cli.main "movie.srt" --service mymemory --stats
+```
+
+**Method 2 (After `pip install -e .`):**
 ```bash
 # Basic translation
 swahili-sub-translate "Game of Thrones S01E01.srt"
@@ -70,6 +115,19 @@ swahili-sub-translate "movie.srt" --service mymemory --stats
 
 ### Batch Translation
 
+**Method 1 (Direct Python):**
+```bash
+# Translate all .srt files in a directory
+python3 -m swahili_subtitle_translator.cli.main /movies/subtitles --batch
+
+# Translate specific patterns
+python3 -m swahili_subtitle_translator.cli.main /movies --batch --pattern "*.srt" --pattern "*.ass"
+
+# Custom output directory
+python3 -m swahili_subtitle_translator.cli.main /input --batch -o /output/swahili
+```
+
+**Method 2 (After installation):**
 ```bash
 # Translate all .srt files in a directory
 swahili-sub-translate /movies/subtitles --batch
@@ -84,32 +142,32 @@ swahili-sub-translate /input --batch -o /output/swahili
 ### Advanced Options
 
 ```bash
-# Disable caching (not recommended)
+# Method 1 (Direct Python)
+python3 -m swahili_subtitle_translator.cli.main movie.srt --no-cache
+python3 -m swahili_subtitle_translator.cli.main movie.srt --max-retries 5
+python3 -m swahili_subtitle_translator.cli.main movie.srt --verbose
+python3 -m swahili_subtitle_translator.cli.main movie.srt --quiet
+
+# Method 2 (After installation)
 swahili-sub-translate movie.srt --no-cache
-
-# Increase retry attempts for unreliable connections
 swahili-sub-translate movie.srt --max-retries 5
-
-# Verbose output for debugging
 swahili-sub-translate movie.srt --verbose
-
-# Quiet mode for scripts
 swahili-sub-translate movie.srt --quiet
 ```
 
 ### Information and Management
 
 ```bash
-# Show supported subtitle formats
+# Method 1 (Direct Python)
+python3 -m swahili_subtitle_translator.cli.main --info --formats
+python3 -m swahili_subtitle_translator.cli.main --info --file movie.srt
+python3 -m swahili_subtitle_translator.cli.main --cache --cache-stats
+python3 -m swahili_subtitle_translator.cli.main --cache --clear-cache
+
+# Method 2 (After installation)
 swahili-sub-translate --info --formats
-
-# Validate and show file information
 swahili-sub-translate --info --file movie.srt
-
-# Show cache statistics
 swahili-sub-translate --cache --cache-stats
-
-# Clear translation cache
 swahili-sub-translate --cache --clear-cache
 ```
 
@@ -286,6 +344,77 @@ This tool is specifically optimized for English to Swahili translation:
 - **Operating System**: Windows, macOS, Linux
 - **Internet Connection**: Required for translation services
 - **Storage**: Minimal (cache database typically <10MB)
+
+## 🐛 Troubleshooting
+
+### Command Not Found Errors
+
+**Problem**: `swahili-sub-translate: command not found`
+
+**Solutions**:
+1. **Use Method 1 (Direct Python)** - No installation needed:
+   ```bash
+   python3 -m swahili_subtitle_translator.cli.main movie.srt
+   ```
+
+2. **Install the package properly**:
+   ```bash
+   cd swahili-subtitle-translator
+   pip3 install -e .
+   # Then use: swahili-sub-translate movie.srt
+   ```
+
+3. **Check your PATH**:
+   ```bash
+   echo $PATH
+   # Make sure ~/.local/bin is in your PATH
+   ```
+
+### Import Errors
+
+**Problem**: `ModuleNotFoundError` or import errors
+
+**Solutions**:
+1. **Install dependencies**:
+   ```bash
+   pip3 install -r requirements.txt
+   ```
+
+2. **Use virtual environment** (recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip3 install -r requirements.txt
+   ```
+
+### Translation Service Errors
+
+**Problem**: Translation fails or "Service unavailable"
+
+**Solutions**:
+1. **Check internet connection**
+2. **Try different service**:
+   ```bash
+   python3 -m swahili_subtitle_translator.cli.main movie.srt --service google
+   ```
+3. **Increase retry attempts**:
+   ```bash
+   python3 -m swahili_subtitle_translator.cli.main movie.srt --max-retries 5
+   ```
+
+### Permission Errors
+
+**Problem**: Permission denied errors
+
+**Solutions**:
+1. **Check file permissions**:
+   ```bash
+   chmod 644 your_subtitle_file.srt
+   ```
+2. **Use different output directory**:
+   ```bash
+   python3 -m swahili_subtitle_translator.cli.main movie.srt -o ~/translated_movie.srt
+   ```
 
 ## 🐛 Known Limitations
 
