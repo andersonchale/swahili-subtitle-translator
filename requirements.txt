@@ -1,0 +1,17 @@
+# Core dependencies
+pysrt>=1.1.2
+deep-translator>=1.11.4
+googletrans==4.0.0rc1
+
+# CLI dependencies
+colorama>=0.4.6
+
+# Optional dependencies
+# ass  # For ASS/SSA subtitle support
+
+# Development dependencies (optional)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+mypy>=1.0.0
