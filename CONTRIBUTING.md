@@ -36,7 +36,7 @@ This document provides guidelines and instructions for contributing to this proj
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/yourusername/swahili-subtitle-translator.git
+   git clone https://github.com/andersonchale/swahili-subtitle-translator.git
    cd swahili-subtitle-translator
    ```
 

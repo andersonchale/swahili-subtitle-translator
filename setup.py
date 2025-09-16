@@ -33,11 +33,11 @@ setup(
     description="Professional subtitle translation tool for English to Swahili",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/swahili-subtitle-translator",  # Update with your GitHub URL
+    url="https://github.com/andersonchale/swahili-subtitle-translator",  # Update with your GitHub URL
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/swahili-subtitle-translator/issues",
-        "Source": "https://github.com/yourusername/swahili-subtitle-translator",
-        "Documentation": "https://github.com/yourusername/swahili-subtitle-translator#readme",
+        "Bug Reports": "https://github.com/andersonchale/swahili-subtitle-translator/issues",
+        "Source": "https://github.com/andersonchale/swahili-subtitle-translator",
+        "Documentation": "https://github.com/andersonchale/swahili-subtitle-translator#readme",
     },
     packages=find_packages(),
     classifiers=[
@@ -79,8 +79,8 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "swahili-sub-translate=swahili_subtitle_translator.cli.main:main",
-            "sst=swahili_subtitle_translator.cli.main:main",  # Short alias
+            "swahili-sub-translate=swahili_subtitle_translator.cli:main",
+            "sst=swahili_subtitle_translator.cli:main",  # Short alias
         ],
     },
     include_package_data=True,

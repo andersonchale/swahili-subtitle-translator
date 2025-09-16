@@ -13,13 +13,36 @@ __author__ = "Anderson"
 __license__ = "MIT"
 __description__ = "Professional subtitle translation tool for English to Swahili"
 
-from .core.translator import SubtitleTranslator
-from .core.processor import SubtitleProcessor
-from .utils.formats import SupportedFormats
+# Import main components from our new implementation
+from .search import SubtitleSearchEngine, search_subtitles
+from .translation import (
+    TranslationEngine, 
+    create_translation_engine, 
+    translate_simple,
+    parse_srt_file,
+    save_srt_file
+)
+from .config import get_config_manager, get_config
 
 __all__ = [
-    "SubtitleTranslator",
-    "SubtitleProcessor", 
-    "SupportedFormats",
-    "__version__"
+    # Search functionality
+    "SubtitleSearchEngine", 
+    "search_subtitles",
+    
+    # Translation functionality
+    "TranslationEngine", 
+    "create_translation_engine", 
+    "translate_simple",
+    "parse_srt_file",
+    "save_srt_file",
+    
+    # Configuration
+    "get_config_manager", 
+    "get_config",
+    
+    # Metadata
+    "__version__",
+    "__author__",
+    "__license__",
+    "__description__"
 ]

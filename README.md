@@ -20,55 +20,92 @@ A professional, open-source tool for translating subtitle files from English to 
 
 ## 🚀 Quick Start
 
-### Method 1: Direct Usage (Recommended for beginners)
+### Method 1: Global Installation (Recommended)
 
-1. **Clone the repository:**
+**🎯 One-Command Installation:**
+
 ```bash
-git clone https://github.com/yourusername/swahili-subtitle-translator.git
+# Clone the repository
+git clone https://github.com/andersonchale/swahili-subtitle-translator.git
 cd swahili-subtitle-translator
+
+# Run the automated installation script
+chmod +x install_global.sh
+./install_global.sh
 ```
 
-2. **Install dependencies:**
+This script will:
+- Detect your operating system (Linux/macOS/Windows Git Bash)
+- Offer installation options (system-wide, user, or virtual environment)
+- Make `sst` and `swahili-sub-translate` commands globally available
+- Test the installation automatically
+
+**🌐 Manual Global Installation:**
+
 ```bash
+# For system-wide installation (requires sudo on Linux/macOS)
+sudo pip3 install /path/to/swahili-subtitle-translator
+
+# For user installation (no admin rights needed)
+pip3 install --user /path/to/swahili-subtitle-translator
+
+# Add ~/.local/bin to PATH if needed (Linux/macOS)
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+source ~/.bashrc
+
+# Refresh command cache
+hash -r
+```
+
+**✅ Test Global Installation:**
+```bash
+# Test from any directory
+cd ~/Desktop
+sst --help
+swahili-sub-translate --help
+
+# These should work from anywhere!
+sst search "The Matrix" --limit 3
+sst pipeline "Inception" --output inception_swahili.srt
+```
+
+### Method 2: Virtual Environment (Development)
+
+```bash
+git clone https://github.com/andersonchale/swahili-subtitle-translator.git
+cd swahili-subtitle-translator
+
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows Git Bash: source .venv/Scripts/activate
+
+# Install in editable mode
+pip install -e .
+
+# Commands available while venv is active
+sst --help
+swahili-sub-translate --help
+```
+
+### Method 3: Direct Python Usage (No Installation)
+
+```bash
+# Clone and use directly
+git clone https://github.com/andersonchale/swahili-subtitle-translator.git
+cd swahili-subtitle-translator
 pip3 install -r requirements.txt
+
+# Use with Python module syntax
+python3 -m swahili_subtitle_translator search "The Matrix"
+python3 -m swahili_subtitle_translator pipeline "Inception" -o output.srt
 ```
 
-3. **Use directly with Python:**
-```bash
-# Translate a single subtitle file
-python3 -m swahili_subtitle_translator.cli.main movie.srt
-
-# Show help
-python3 -m swahili_subtitle_translator.cli.main --help
-
-# Translate with statistics
-python3 -m swahili_subtitle_translator.cli.main movie.srt --stats
-```
-
-### Method 2: Install as Package (Advanced users)
-
-1. **Clone and install in development mode:**
-```bash
-git clone https://github.com/yourusername/swahili-subtitle-translator.git
-cd swahili-subtitle-translator
-pip3 install -e .
-```
-
-2. **Use the installed command:**
-```bash
-# Now you can use the command directly
-swahili-sub-translate movie.srt
-sst movie.srt  # Short alias
-```
-
-### Method 3: Install from PyPI (Future - when published)
+### Method 4: Install from PyPI (Future)
 
 ```bash
-# Install from PyPI (when published)
+# When published to PyPI
 pip3 install swahili-subtitle-translator
-
-# Use directly
-swahili-sub-translate movie.srt
+sst --help  # Available globally
 ```
 
 ### Basic Usage Examples
@@ -171,6 +208,130 @@ swahili-sub-translate --cache --cache-stats
 swahili-sub-translate --cache --clear-cache
 ```
 
+## 🎬 Subtitle Search & Pipeline Features
+
+In addition to translating existing subtitle files, this tool now supports searching for subtitles from multiple sources and performing complete search-download-translate workflows.
+
+### Searching for Subtitles
+
+Use the `search` command to find subtitles for movies or TV shows:
+
+```bash
+# Method 1 (Direct Python)
+python3 -m swahili_subtitle_translator.cli.main search "Movie Title" --limit 3
+python3 -m swahili_subtitle_translator.cli.main search "Game of Thrones" --season 1 --episode 1
+
+# Method 2 (After installation)
+sst search "Movie Title" --limit 3
+sst search "Game of Thrones" --season 1 --episode 1 --year 2011
+```
+
+**Search Options:**
+- `--limit`: Maximum number of results to return (default: 5)
+- `--year`: Movie release year or TV show year
+- `--season`: TV show season number
+- `--episode`: TV show episode number
+- `--sources`: Limit search to specific sources (e.g., `opensubtitles`, `subscene`, `yify`, `mock`)
+
+### Using the Complete Pipeline
+
+The `pipeline` command performs the full workflow of searching, downloading, and translating subtitles automatically:
+
+```bash
+# Method 1 (Direct Python)
+# Basic pipeline usage
+python3 -m swahili_subtitle_translator.cli.main pipeline "Inception" --limit 1 --output inception_swahili.srt
+
+# With specific options
+python3 -m swahili_subtitle_translator.cli.main pipeline "Breaking Bad" \
+    --season 1 --episode 1 \
+    --output breaking_bad_s01e01_swahili.srt \
+    --service google \
+    --target-language sw
+
+# Method 2 (After installation)
+# Basic pipeline usage
+sst pipeline "Inception" --limit 1 --output inception_swahili.srt
+
+# With specific options
+sst pipeline "Breaking Bad" \
+    --season 1 --episode 1 \
+    --output breaking_bad_s01e01_swahili.srt \
+    --service google \
+    --target-language sw
+```
+
+**Pipeline Options:**
+- `--output` or `-o`: Path for the translated subtitle file
+- `--source-language`: Source subtitle language (default: English)
+- `--target-language` or `-t`: Target translation language (default: Swahili)
+- `--service`: Translation service (`google`, `mymemory`, `mock`)
+- `--year`, `--season`, `--episode`: Media metadata for better search results
+- `--limit`: Maximum subtitle search results to consider
+- `--sources`: Subtitle sources to search (e.g., `opensubtitles`, `subscene`, `yify`, `mock`)
+- `--temp-dir`: Directory for temporary downloaded files
+- `--cleanup`: Remove temporary files after processing (default: true)
+- `--no-validate`: Skip subtitle validation checks
+
+### Pipeline Workflow
+
+The pipeline command performs these steps automatically:
+
+1. **🔍 Search**: Searches configured subtitle sources for matches
+2. **📥 Download**: Downloads the best matching subtitle file
+3. **🌍 Translate**: Translates the subtitle from source to target language
+4. **💾 Save**: Saves the translated subtitle to the specified output file
+5. **🧹 Cleanup**: Removes temporary files (if enabled)
+
+### Subtitle Sources
+
+The tool supports multiple subtitle sources:
+
+- **OpenSubtitles**: Large database of movie and TV subtitles
+- **Subscene**: Popular subtitle community site
+- **YIFY**: Movie subtitles from YIFY releases
+- **Mock**: Test source with demo subtitles (for testing)
+
+**Note**: Real subtitle sources may require API keys and are subject to anti-bot protections. The mock source is perfect for testing the functionality without external dependencies.
+
+### Configuration for Search & Pipeline
+
+For development or updates to the search functionality:
+
+```bash
+# Navigate to project directory
+cd /home/tekfluent/Projects/swahili-subtitle-translator
+
+# Activate virtual environment
+source .venv/bin/activate
+
+# Reinstall with latest changes
+pip install -e . --force-reinstall --no-deps
+
+# Test the pipeline
+sst pipeline "Test Movie" --sources mock --output test_output.srt
+```
+
+### Examples
+
+**Movie Translation Pipeline:**
+```bash
+# Search and translate a movie subtitle
+sst pipeline "The Dark Knight" --year 2008 --output dark_knight_swahili.srt
+```
+
+**TV Show Translation Pipeline:**
+```bash
+# Search and translate a TV show episode
+sst pipeline "Friends" --season 1 --episode 1 --year 1994 --output friends_s01e01_swahili.srt
+```
+
+**Testing with Mock Source:**
+```bash
+# Test pipeline functionality without real web scraping
+sst pipeline "Test Movie" --sources mock --output test_swahili.srt
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -240,7 +401,7 @@ The tool includes built-in adaptations for common English phrases to culturally 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/swahili-subtitle-translator.git
+git clone https://github.com/andersonchale/swahili-subtitle-translator.git
 cd swahili-subtitle-translator
 
 # Create virtual environment
@@ -349,26 +510,74 @@ This tool is specifically optimized for English to Swahili translation:
 
 ### Command Not Found Errors
 
-**Problem**: `swahili-sub-translate: command not found`
+**Problem**: `sst: command not found` or `swahili-sub-translate: command not found`
 
 **Solutions**:
-1. **Use Method 1 (Direct Python)** - No installation needed:
+
+1. **Refresh command cache** (Most common fix):
    ```bash
-   python3 -m swahili_subtitle_translator.cli.main movie.srt
+   hash -r
+   sst --help  # Try again
    ```
 
-2. **Install the package properly**:
+2. **Check if commands are installed**:
    ```bash
-   cd swahili-subtitle-translator
-   pip3 install -e .
-   # Then use: swahili-sub-translate movie.srt
+   # Check if the executables exist
+   ls -la ~/.local/bin/ | grep -E "(sst|swahili)"
+   # Or for system installation:
+   which sst
+   which swahili-sub-translate
    ```
 
-3. **Check your PATH**:
+3. **Verify PATH includes the installation directory**:
    ```bash
    echo $PATH
-   # Make sure ~/.local/bin is in your PATH
+   # Should include ~/.local/bin (user install) or /usr/local/bin (system install)
    ```
+
+4. **Add to PATH if missing**:
+   ```bash
+   # For user installation
+   export PATH="$PATH:$HOME/.local/bin"
+   echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+   
+   # Reload shell configuration
+   source ~/.bashrc
+   ```
+
+5. **Reinstall properly**:
+   ```bash
+   # User installation (recommended)
+   pip3 install --user --force-reinstall /path/to/swahili-subtitle-translator
+   
+   # System installation (requires sudo)
+   sudo pip3 install --force-reinstall /path/to/swahili-subtitle-translator
+   ```
+
+6. **Use the automated installation script**:
+   ```bash
+   cd swahili-subtitle-translator
+   chmod +x install_global.sh
+   ./install_global.sh
+   ```
+
+7. **Test from different directory**:
+   ```bash
+   cd ~/Desktop
+   sst --help  # Should work from anywhere
+   ```
+
+**For Windows Git Bash Users**:
+```bash
+# Check if Python Scripts directory is in PATH
+echo $PATH | grep -i python
+
+# Add Python Scripts to PATH (typical location)
+export PATH="$PATH:/c/Users/$USER/AppData/Local/Programs/Python/Python*/Scripts"
+
+# Or use the installation script which handles this automatically
+./install_global.sh
+```
 
 ### Import Errors
 
@@ -451,7 +660,7 @@ A: No, internet connection required for translation services.
 
 ## 📞 Support
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/swahili-subtitle-translator/issues)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/andersonchale/swahili-subtitle-translator/issues)
 - **Documentation**: Check the [docs/](docs/) directory
 - **Discussions**: Use GitHub Discussions for questions
 

@@ -1,17 +1,37 @@
-# Core dependencies
-pysrt>=1.1.2
-deep-translator>=1.11.4
-googletrans==4.0.0rc1
+# Core dependencies for subtitle processing and translation
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
 
-# CLI dependencies
+# CLI and user interface
 colorama>=0.4.6
+tqdm>=4.66.0
 
-# Optional dependencies
-# ass  # For ASS/SSA subtitle support
+# Configuration and utilities
+python-dotenv>=1.0.0
 
-# Development dependencies (optional)
-pytest>=7.0.0
-pytest-cov>=4.0.0
-black>=22.0.0
-flake8>=5.0.0
-mypy>=1.0.0
+# Optional translation service dependencies
+# Uncomment the services you want to use:
+
+# Google Cloud Translation API
+# google-cloud-translate>=3.12.0
+
+# OpenAI API for GPT translation
+# openai>=1.3.0
+
+# Azure Translator
+# azure-cognitiveservices-language-translator>=3.0.0
+
+# Offline translation models
+# transformers>=4.35.0
+# torch>=2.1.0
+# sentencepiece>=0.1.99
+
+# Development dependencies (install with pip install -e ".[dev]")
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.9.0
+# isort>=5.12.0
+# mypy>=1.6.0
+# flake8>=6.1.0
+# pre-commit>=3.4.0
