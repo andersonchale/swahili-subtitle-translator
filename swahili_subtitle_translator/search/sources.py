@@ -485,218 +485,221 @@ class MockSubtitleSource(SubtitleSource):
     
     def __init__(self):
         super().__init__(
-            base_url="https://example.com",
+            base_url="https://www.opensubtitles.org",
             name="Mock Subtitle Source",
             rate_limit=0.5
         )
         
-        # Sample mock data
-        self.mock_results = {
-            "matrix": [
-                {
-                    "title": "The Matrix (1999)",
-                    "release_info": "BluRay.1080p.x264",
-                    "language": "en",
-                    "download_url": "https://example.com/download/matrix_1999.srt"
-                },
-                {
-                    "title": "The Matrix Reloaded (2003)", 
-                    "release_info": "DVDRip.XviD",
-                    "language": "en",
-                    "download_url": "https://example.com/download/matrix_reloaded.srt"
-                }
-            ],
-            "avatar": [
-                {
-                    "title": "Avatar (2009)",
-                    "release_info": "BluRay.1080p.x264-SECTOR7",
-                    "language": "en",
-                    "download_url": "https://example.com/download/avatar_2009.srt"
-                }
-            ],
-            "inception": [
-                {
-                    "title": "Inception (2010)",
-                    "release_info": "BluRay.720p.x264",
-                    "language": "en", 
-                    "download_url": "https://example.com/download/inception.srt"
-                }
-            ]
-        }
+        # Common release types and video qualities
+        self.release_types = [
+            "BluRay.1080p.x264-SPARKS",
+            "BluRay.720p.x264-DON", 
+            "HDTV.XviD-BiA",
+            "HDTV.XviD-FoV",
+            "DVDRip.XviD-AMIABLE",
+            "WEBRip.1080p.x264-RARBG",
+            "WEB-DL.1080p.H264-FGT",
+            "BRRip.720p.x264-YIFY",
+            "HDTV.x264-KILLERS",
+            "DVDScr.XviD-MAXSPEED"
+        ]
+        
+        # Common TV show patterns
+        self.tv_patterns = [
+            "S{:02d}E{:02d}",
+            "{:d}x{:02d}"
+        ]
     
     def search(self, query: SearchQuery) -> List[SearchResult]:
-        """Mock search that returns sample results."""
+        """Mock search that generates realistic results based on the query."""
         logger.info(f"Mock searching for: {query.title}")
+        import random
+        import hashlib
         
-        # Simple keyword matching
-        query_lower = query.title.lower()
+        # Use query title as seed for consistent results
+        seed = int(hashlib.md5(query.title.encode()).hexdigest()[:8], 16)
+        random.seed(seed)
+        
         found_results = []
+        num_results = min(query.limit, random.randint(2, 5))
         
-        for keyword, results in self.mock_results.items():
-            if keyword in query_lower:
-                for i, result_data in enumerate(results[:query.limit]):
-                    result = SearchResult(
-                        id=f"mock_{keyword}_{i}",
-                        title=result_data["title"],
-                        year=2009 + i,  # Add year
-                        source=SourceType.MOCK,
-                        language=result_data["language"],
-                        format=SubtitleFormat.SRT,
-                        download_url=result_data["download_url"],
-                        release_info=result_data["release_info"],
-                        download_count=1000 + i * 100,
-                        file_size=50000 + i * 5000
-                    )
-                    found_results.append(result)
+        # Parse the query to detect if it's a TV show or movie
+        is_tv_show = self._detect_tv_show(query.title)
+        base_year = query.year or self._extract_year_from_title(query.title) or random.randint(2000, 2023)
+        clean_title = self._clean_title(query.title)
         
-        # Add some generic results if no specific matches
-        if not found_results:
-            for i in range(min(3, query.limit)):
-                result = SearchResult(
-                    id=f"mock_generic_{i}",
-                    title=f"{query.title} - Sample Result {i+1}",
-                    year=2020 + i,
-                    source=SourceType.MOCK,
-                    language=query.language or "en",
-                    format=SubtitleFormat.SRT,
-                    download_url=f"https://example.com/download/sample_{i}.srt",
-                    release_info="Sample.Release",
-                    download_count=500 + i * 50,
-                    file_size=45000 + i * 3000
-                )
-                found_results.append(result)
+        for i in range(num_results):
+            if is_tv_show:
+                result = self._generate_tv_result(clean_title, query, i, base_year)
+            else:
+                result = self._generate_movie_result(clean_title, query, i, base_year)
+            found_results.append(result)
         
         logger.info(f"Found {len(found_results)} mock results")
         return found_results
     
-    def download_subtitle(self, result: SearchResult, output_path: Path) -> Path:
-        """Create a sample subtitle file."""
-        sample_content = f"""1
-00:00:01,000 --> 00:00:04,000
-Sample subtitle for {result.title}
-
-2
-00:00:05,000 --> 00:00:08,000
-This is a mock subtitle file
-
-3
-00:00:09,000 --> 00:00:12,000
-Generated for demonstration purposes"""
-        
-        output_path.write_text(sample_content, encoding='utf-8')
-        logger.info(f"Created mock subtitle file: {output_path}")
-        return output_path
-
-
-class OpenSubtitlesSource(SubtitleSource):
-    """Subscene.com subtitle source."""
+    def _detect_tv_show(self, title: str) -> bool:
+        """Detect if the title appears to be a TV show."""
+        tv_indicators = ['s01', 's1', 'season', 'episode', 'series', 'tv', 'show']
+        title_lower = title.lower()
+        return any(indicator in title_lower for indicator in tv_indicators)
     
-    def __init__(self):
-        super().__init__(
-            base_url="https://subscene.com",
-            name="Subscene",
-            rate_limit=2.0  # More conservative rate limiting
+    def _extract_year_from_title(self, title: str) -> Optional[int]:
+        """Extract year from title if present."""
+        import re
+        year_match = re.search(r'(19|20)\d{2}', title)
+        return int(year_match.group()) if year_match else None
+    
+    def _clean_title(self, title: str) -> str:
+        """Clean the title by removing year and extra info."""
+        import re
+        # Remove year in parentheses or standalone
+        cleaned = re.sub(r'\b(19|20)\d{2}\b', '', title)
+        # Remove common prefixes/suffixes
+        cleaned = re.sub(r'\s*-\s*(season|series|tv|show).*$', '', cleaned, flags=re.IGNORECASE)
+        return cleaned.strip()
+    
+    def _create_url_slug(self, title: str, year: int) -> str:
+        """Create URL-friendly slug for OpenSubtitles URLs."""
+        import re
+        
+        # Convert to lowercase and replace spaces/special chars with hyphens
+        slug = title.lower()
+        slug = re.sub(r'[^a-z0-9\s-]', '', slug)  # Remove special characters
+        slug = re.sub(r'\s+', '-', slug)  # Replace spaces with hyphens
+        slug = re.sub(r'-+', '-', slug)  # Remove multiple consecutive hyphens
+        slug = slug.strip('-')  # Remove leading/trailing hyphens
+        
+        # Add year to make it more realistic
+        return f"{year}-{slug}"
+    
+    def _generate_movie_result(self, title: str, query: SearchQuery, index: int, year: int) -> SearchResult:
+        """Generate a realistic movie subtitle result."""
+        import random
+        
+        # Vary the year slightly for different releases
+        result_year = year + random.randint(-1, 1)
+        release_type = random.choice(self.release_types)
+        
+        # Generate realistic download stats
+        download_count = random.randint(1000, 50000)
+        file_size = random.randint(40000, 120000)
+        
+        # Create realistic OpenSubtitles search URL
+        # Format: https://www.opensubtitles.org/en/search/sublanguageid-all/moviename-{title}
+        title_encoded = title.replace(' ', '%20').replace('-', '%20')
+        download_url = f"https://www.opensubtitles.org/en/search/sublanguageid-all/moviename-{title_encoded}"
+        
+        return SearchResult(
+            id=f"mock_movie_{index}",
+            title=f"{title} ({result_year})",
+            year=result_year,
+            source=SourceType.MOCK,
+            language=query.language or "en",
+            format=SubtitleFormat.SRT,
+            download_url=download_url,
+            release_info=release_type,
+            download_count=download_count,
+            file_size=file_size
         )
     
-    def search(self, query: SearchQuery) -> List[SearchResult]:
-        """Search Subscene for subtitles."""
-        logger.info(f"Searching Subscene for: {query.title}")
+    def _generate_tv_result(self, title: str, query: SearchQuery, index: int, year: int) -> SearchResult:
+        """Generate a realistic TV show subtitle result."""
+        import random
         
-        try:
-            search_url = f"{self.base_url}/subtitles/searchbytitle"
-            data = {'query': query.title}
-            
-            # Make POST request for search
-            self._rate_limit_wait()
-            response = self.session.post(search_url, data=data, timeout=30)
-            response.raise_for_status()
-            
-            return self._parse_search_results(response.content, query)
-            
-        except Exception as e:
-            logger.error(f"Subscene search failed: {e}")
-            return []
-    
-    def _parse_search_results(self, html_content: bytes, query: SearchQuery) -> List[SearchResult]:
-        """Parse Subscene search results."""
-        soup = BeautifulSoup(html_content, 'html.parser')
-        results = []
+        # Generate season/episode info
+        season = query.season or random.randint(1, 5)
+        episode = query.episode or random.randint(1, 22)
         
-        # Find movie/TV show links
-        title_links = soup.find_all('a', {'href': re.compile(r'/subtitles/')})
+        # Choose episode format
+        episode_format = random.choice(self.tv_patterns)
+        episode_str = episode_format.format(season, episode)
         
-        for i, link in enumerate(title_links[:query.limit]):
-            try:
-                title = link.get_text(strip=True)
-                detail_url = urljoin(self.base_url, link['href'])
-                
-                result = SearchResult(
-                    id=f"subscene_{i}",
-                    title=title,
-                    year=None,
-                    language="en",
-                    format=SubtitleFormat.SRT,
-                    source=SourceType.SUBSCENE,
-                    download_url=detail_url  # This is actually a detail page
-                )
-                results.append(result)
-                
-            except Exception as e:
-                logger.debug(f"Failed to parse Subscene result: {e}")
-                continue
+        # Generate generic episode title based on episode number
+        episode_title = f"Episode {episode}"
         
-        logger.info(f"Found {len(results)} Subscene results")
-        return results
+        release_type = random.choice([r for r in self.release_types if 'HDTV' in r or 'WEB' in r])
+        
+        # TV shows typically have smaller file sizes
+        download_count = random.randint(500, 15000)
+        file_size = random.randint(25000, 60000)
+        
+        # Create realistic OpenSubtitles search URL for TV shows
+        # Format: https://www.opensubtitles.org/en/search/sublanguageid-all/moviename-{title}
+        title_encoded = title.replace(' ', '%20').replace('-', '%20')
+        download_url = f"https://www.opensubtitles.org/en/search/sublanguageid-all/moviename-{title_encoded}"
+        
+        full_title = f"{title} {episode_str} - {episode_title}"
+        
+        return SearchResult(
+            id=f"mock_tv_{index}",
+            title=full_title,
+            year=year,
+            source=SourceType.MOCK,
+            language=query.language or "en",
+            format=SubtitleFormat.SRT,
+            download_url=download_url,
+            release_info=release_type,
+            download_count=download_count,
+            file_size=file_size,
+            season=season,
+            episode=episode
+        )
     
     def download_subtitle(self, result: SearchResult, output_path: Path) -> Path:
-        """Download subtitle from Subscene."""
-        logger.info(f"Downloading subtitle: {result.display_name}")
+        """Create a generic mock subtitle file."""
+        import random
+        import hashlib
         
-        try:
-            # First get the subtitle detail page
-            response = self._make_request(result.download_url)
-            soup = BeautifulSoup(response.content, 'html.parser')
+        # Use result ID as seed for consistent content
+        seed = int(hashlib.md5(result.id.encode()).hexdigest()[:8], 16)
+        random.seed(seed)
+        
+        # Generate completely generic subtitle content
+        lines = []
+        start_time = 0
+        
+        # Generate 8-15 subtitle entries with generic placeholder text
+        num_lines = random.randint(8, 15)
+        
+        for i in range(1, num_lines + 1):
+            end_time = start_time + random.randint(2000, 6000)  # 2-6 seconds per subtitle
             
-            # Find download link
-            download_link = soup.find('a', {'href': re.compile(r'/subtitle/download')})
-            if not download_link:
-                raise SubtitleSourceError("Download link not found")
+            # Format time as SRT timestamp
+            start_ts = self._format_timestamp(start_time)
+            end_ts = self._format_timestamp(end_time)
             
-            download_url = urljoin(self.base_url, download_link['href'])
+            # Create generic subtitle text
+            subtitle_text = f"[Subtitle line {i} for {result.title}]"
             
-            # Download the subtitle
-            response = self._make_request(download_url)
+            lines.extend([
+                str(i),
+                f"{start_ts} --> {end_ts}",
+                subtitle_text,
+                ""  # Empty line separator
+            ])
             
-            # Handle ZIP files
-            if response.headers.get('content-type', '').startswith('application/zip'):
-                return self._extract_from_zip(response.content, output_path)
-            else:
-                output_path.write_bytes(response.content)
-                return output_path
-                
-        except Exception as e:
-            raise SubtitleSourceError(f"Subscene download failed: {e}")
+            start_time = end_time + random.randint(500, 2000)  # Gap between subtitles
+        
+        # Add header comment
+        header = f"# Mock subtitle file for: {result.title}\n# Generated by Swahili Subtitle Translator\n# Source: {result.source.value}\n# Release: {result.release_info}\n\n"
+        
+        content = header + "\n".join(lines)
+        output_path.write_text(content, encoding='utf-8')
+        logger.info(f"Created mock subtitle file: {output_path}")
+        return output_path
     
-    def _extract_from_zip(self, zip_content: bytes, output_path: Path) -> Path:
-        """Extract subtitle from ZIP (same as OpenSubtitles)."""
-        with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
-            subtitle_files = [f for f in zf.namelist() 
-                            if f.lower().endswith(('.srt', '.ass', '.ssa', '.vtt', '.sub'))]
-            
-            if not subtitle_files:
-                raise SubtitleSourceError("No subtitle files found in archive")
-            
-            subtitle_file = subtitle_files[0]
-            content = zf.read(subtitle_file)
-            
-            original_ext = Path(subtitle_file).suffix
-            if output_path.suffix != original_ext:
-                output_path = output_path.with_suffix(original_ext)
-            
-            output_path.write_bytes(content)
-            return output_path
+    def _format_timestamp(self, milliseconds: int) -> str:
+        """Format milliseconds as SRT timestamp (HH:MM:SS,mmm)."""
+        hours = milliseconds // 3600000
+        minutes = (milliseconds % 3600000) // 60000
+        seconds = (milliseconds % 60000) // 1000
+        ms = milliseconds % 1000
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d},{ms:03d}"
 
 
+# Duplicate OpenSubtitles class removed - was incorrectly implementing Subscene
+# The correct OpenSubtitles implementation is above at line 221
 class YIFYSubtitlesSource(SubtitleSource):
     """YIFY Subtitles source."""
     

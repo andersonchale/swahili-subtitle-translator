@@ -50,8 +50,13 @@ class SubtitleSearchEngine:
     def _initialize_sources(self, opensubtitles_api_key: Optional[str] = None):
         """Initialize all available subtitle sources."""
         try:
-            self.sources[SourceType.OPENSUBTITLES] = OpenSubtitlesSource(opensubtitles_api_key)
-            logger.info("OpenSubtitles source initialized")
+            # Use API if key is provided, otherwise fallback to web scraping
+            use_api = bool(opensubtitles_api_key)
+            self.sources[SourceType.OPENSUBTITLES] = OpenSubtitlesSource(
+                api_key=opensubtitles_api_key, 
+                use_api=use_api
+            )
+            logger.info(f"OpenSubtitles source initialized (API: {use_api})")
         except Exception as e:
             logger.warning(f"Failed to initialize OpenSubtitles source: {e}")
         
