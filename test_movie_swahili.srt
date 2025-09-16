@@ -1,0 +1,19 @@
+1
+00:00:01,000 --> 00:00:03,000
+[SW] Hello, world!
+
+2
+00:00:04,000 --> 00:00:06,000
+[SW] How are you today?
+
+3
+00:00:07,000 --> 00:00:09,000
+[SW] Welcome to the show.
+
+4
+00:00:10,000 --> 00:00:12,000
+[SW] Thank you for watching.
+
+5
+00:00:13,000 --> 00:00:15,000
+[SW] See you next time!

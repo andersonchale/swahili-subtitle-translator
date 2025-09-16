@@ -4,7 +4,7 @@
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/swahili-subtitle-translator.git
+git clone https://github.com/andersonchale/swahili-subtitle-translator.git
 cd swahili-subtitle-translator
 ```
 
@@ -31,7 +31,7 @@ That's it! No complex installation needed.
 
 ### Install as Package
 ```bash
-git clone https://github.com/yourusername/swahili-subtitle-translator.git
+git clone https://github.com/andersonchale/swahili-subtitle-translator.git
 cd swahili-subtitle-translator
 pip3 install -e .
 ```

@@ -1,0 +1,36 @@
+{
+  "debug": false,
+  "verbose": false,
+  "log_level": "INFO",
+  "default_source_language": "en",
+  "default_target_language": "sw",
+  "show_progress": true,
+  "colored_output": true,
+  "translation": {
+    "google_api_key": null,
+    "openai_api_key": null,
+    "default_service": "google_translate",
+    "fallback_services": [
+      "offline_model",
+      "mock"
+    ],
+    "quality_threshold": 0.6,
+    "max_retries": 3,
+    "batch_size": 100,
+    "parallel_processing": true,
+    "rate_limit": 1.0
+  },
+  "search": {
+    "default_sources": [
+      "opensubtitles",
+      "subscene",
+      "yify"
+    ],
+    "max_results": 10,
+    "timeout": 30,
+    "download_directory": "./downloads",
+    "overwrite_existing": false,
+    "opensubtitles_api_key": null,
+    "opensubtitles_user_agent": "Swahili Subtitle Translator v1.0.0"
+  }
+}
