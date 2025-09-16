@@ -36,22 +36,29 @@ chmod +x install_global.sh
 
 This script will:
 - Detect your operating system (Linux/macOS/Windows Git Bash)
-- Offer installation options (system-wide, user, or virtual environment)
+- Offer installation options (system-wide, user, virtual environment, or pipx)
+- Handle modern Python restrictions (PEP 668 externally-managed environments)
 - Make `sst` and `swahili-sub-translate` commands globally available
 - Test the installation automatically
 
 **🌐 Manual Global Installation:**
 
 ```bash
-# For system-wide installation (requires sudo on Linux/macOS)
-sudo pip3 install /path/to/swahili-subtitle-translator
+# Method A: pipx (recommended for modern Python - handles PEP 668)
+sudo apt install pipx  # Ubuntu/Debian
+# brew install pipx   # macOS
+pipx install /path/to/swahili-subtitle-translator
 
-# For user installation (no admin rights needed)
+# Method B: User installation (no admin rights needed)
 pip3 install --user /path/to/swahili-subtitle-translator
 
 # Add ~/.local/bin to PATH if needed (Linux/macOS)
 echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
 source ~/.bashrc
+
+# Method C: System-wide (may fail on modern Ubuntu/Debian due to PEP 668)
+sudo pip3 install /path/to/swahili-subtitle-translator
+# If it fails: sudo pip3 install --break-system-packages /path/to/swahili-subtitle-translator
 
 # Refresh command cache
 hash -r
